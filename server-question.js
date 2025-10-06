@@ -9,6 +9,8 @@
 const express = require('express')
 const path = require('path')
 const bcrypt = require('bcrypt')
+const cookieParser = require('cookie-parser') // <-- Add this line
+const jwt = require('jsonwebtoken') // <-- Also add this line for JWT
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -129,7 +131,7 @@ app.get('/api/me', requireAuth, (req, res) => {
 
 app.post('/api/logout', (req, res) => {
   // TODO: how do we log out? done
-  res.clearCookie('token',{httpOnly:true,secure:true});
+  res.clearCookie('token',{httpOnly:true,secure:isProd});
   return res.json({ ok: true, message: 'Logged out' })
 })
 

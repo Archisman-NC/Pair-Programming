@@ -92,8 +92,7 @@ app.post('/api/login', async (req, res) => {
 
     // TODO: validate password
     const valid = await bcrypt.compare(password,user.passwordHash) 
-
-    if (!valid) {
+if (!valid) {
       return res.status(401).json({ ok: false, error: 'Invalid credentials' })
     }
 

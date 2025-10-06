@@ -8,7 +8,7 @@
 
 const express = require('express')
 const path = require('path')
-// TODO: what more do we need to require?
+const bcrypt = require('bcrypt')
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -28,13 +28,26 @@ const users = {}
 
 // Helper: sign a JWT and set as HTTP-only cookie
 const setAuthCookie = (res, payload) => {
-  // TODO: implement this
-}
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: "7d", 
+  })
+};
 
 // Auth guard
 const requireAuth = (req, res, next) => {
-  // TODO: implement this
-}
+  const token = req.cookies?.authToken;
+  if (!token) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; 
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
 
 // Routes
 app.post('/api/signup', async (req, res) => {
@@ -58,7 +71,7 @@ app.post('/api/signup', async (req, res) => {
     }
 
     // TODO: hash password
-    const passwordHash = password // <-- hash this
+    const passwordHash = await bcrypt.hash(password, 10);
 
     users[key] = {
       name: name.trim(),
@@ -67,7 +80,7 @@ app.post('/api/signup', async (req, res) => {
       createdAt: new Date().toISOString(),
     }
 
-    // TODO: something needs to be done here
+    setAuthCookie(res, { email: key, name });
 
     return res.json({ ok: true, user: { name: users[key].name, email: key } })
   } catch (e) {

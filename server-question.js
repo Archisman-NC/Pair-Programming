@@ -91,13 +91,15 @@ app.post('/api/login', async (req, res) => {
     }
 
     // TODO: validate password
-    const valid = password // <-- check this
+    const valid = await bcrypt.compare(password,user.passwordHash) 
 
     if (!valid) {
       return res.status(401).json({ ok: false, error: 'Invalid credentials' })
     }
 
     // TODO: something needs to be done here
+    setAuthCookie(res, { email: user.email, name: user.name })
+
 
     return res.json({ ok: true, user: { name: user.name, email: key } })
   } catch (e) {
@@ -107,15 +109,15 @@ app.post('/api/login', async (req, res) => {
 })
 
 app.get('/api/me', requireAuth, (req, res) => {
-  const key = email // TODO: where do we get this from?
+  const key = req.user.email // TODO: where do we get this from?
   const user = users[key]
   if (!user) return res.status(401).json({ ok: false, error: 'User not found' })
   return res.json({ ok: true, user: { name: user.name, email: user.email } })
 })
 
 app.post('/api/logout', (req, res) => {
-  // TODO: how do we log out?
-
+  // TODO: how do we log out? done
+  res.clearCookie('token',{httpOnly:true,secure:true});
   return res.json({ ok: true, message: 'Logged out' })
 })
 
